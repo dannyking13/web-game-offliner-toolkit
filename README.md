@@ -11,7 +11,8 @@ clean ZIP release.
 > Proven end-to-end on 5 shipped games (Construct 3, Phaser 2, Phaser 3,
 > PixiJS 5, custom canvas engines) — including the traps: poisoned 404 assets,
 > frozen ad callbacks, 2048px mobile GPU texture limits, minified-code surgery.
-> Unity WebGL exports are eligible since v1.3.0.
+> Unity WebGL exports are eligible since v1.3.0 — and are the **priority
+> candidates** during game selection.
 
 ## What the skill does
 

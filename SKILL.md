@@ -1,7 +1,7 @@
 ---
 name: web-game-offliner
 description: Download any web game (GameSnacks, Famobi, Softgames, Poki, Unity WebGL exports, etc.), strip its platform SDK, patch it into a fully self-contained offline build with a neutral driver, validate it with Playwright plus an application-level firewall, then deploy it to GitHub Pages under a NEW delivery title with the original branding fully removed (the game itself ships unnamed) and a clean ZIP release. Use when the user asks to localize, offline-ify, self-host, mirror, de-SDK, or republish a browser game.
-version: 1.3.0
+version: 1.3.1
 author: buffy
 tags: [games, offline, download, playwright, github-pages, game-snacks]
 ---
@@ -67,9 +67,11 @@ or external reference at all. See Phase 4 step 2 and Phase 5.
    older `UnityLoader` + `Build/*.json`), download the whole build and follow
    the Unity WebGL playbook below.
 
-Selection criteria: 2D web-native games preferred; Unity WebGL exports
-eligible regardless of rendering style; total size under ~20 MB (audit larger
-Unity builds before committing); clean asset manifest; no aggressive DRM.
+Selection criteria: **Unity WebGL games are PRIORITY candidates — actively
+seek them out and prefer them over other engines when choosing what to
+process**; 2D web-native games come next; total size under ~20 MB (audit
+larger Unity builds before committing); clean asset manifest; no aggressive
+DRM.
 
 ## Phase 1 — Download everything (and audit it)
 
