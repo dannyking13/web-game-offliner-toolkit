@@ -1,24 +1,28 @@
 ---
 name: web-game-offliner
-description: Download any web game (GameSnacks, Famobi, Softgames, Poki, Unity WebGL and Godot exports, etc.), strip its platform SDK, patch it into a fully self-contained offline build with a neutral driver, validate it with Playwright plus an application-level firewall, then deploy it to GitHub Pages under the game's ORIGINAL name (repo, Pages URL and ZIP all reflect the original game title — no invented name) with the in-game branding fully removed (the game itself ships unnamed) and a clean ZIP release. Only original games are eligible — no classic games built on an already-known concept, no clones of famous titles; Unity and Godot WebGL builds must stay under 20 MB. Use when the user asks to localize, offline-ify, self-host, mirror, de-SDK, or republish a browser game.
-version: 1.4.0
+description: Download any web game from any portal and any engine (GameSnacks, Famobi, Softgames, Poki, Construct, Phaser, PixiJS, Unity WebGL, Godot WebGL, etc.), strip its platform SDK, patch it into a fully self-contained offline build with a neutral driver, validate it with Playwright plus an application-level firewall, then deploy it to GitHub Pages under the game's ORIGINAL name (repo, Pages URL and ZIP all reflect the original game title — no invented name) with the in-game branding fully removed (the game itself ships unnamed) and a clean ZIP release. Game selection is originality-driven and NOTHING else: only games with an original concept are eligible — no classic games built on an already-known concept, no clones of famous titles; any engine and any game type (2D, 3D…) is acceptable, with NO engine priority and NO platform preference. The chosen game must NOT already be published on CrazyGames (verify before committing), and the whole build must stay under a 20 MB size cap for EVERY engine. Use when the user asks to localize, offline-ify, self-host, mirror, de-SDK, or republish a browser game.
+version: 1.5.0
 author: buffy
-tags: [games, offline, download, playwright, github-pages, game-snacks, godot]
+tags: [games, offline, download, playwright, github-pages, crazygames, godot]
 ---
 
 # Web Game Offliner
 
-Take any web game from a portal (GameSnacks, Famobi, Softgames, CrazyGames…,
-Unity WebGL exports) and turn it into a **100% offline-playable standalone
-build** with zero external dependencies, then deploy it. This skill encodes a
-pipeline proven end-to-end on 5 games (Construct 3, Phaser 2/3, PixiJS 5,
-custom canvas engines; Unity WebGL supported since v1.3.0).
+Take any web game from any portal (GameSnacks, Famobi, Softgames, Poki…, any
+engine from Construct to Unity/Godot WebGL exports) and turn it into a
+**100% offline-playable standalone build** with zero external dependencies,
+then deploy it. This skill encodes a pipeline proven end-to-end on 5 games
+(Construct 3, Phaser 2/3, PixiJS 5, custom canvas engines; Unity WebGL
+supported since v1.3.0, Godot since v1.4.0). Any engine and any game type is
+eligible — the only hard filters are ORIGINALITY, the 20 MB size cap and the
+CrazyGames exclusion.
 
 ## Pipeline overview
 
 ```
 Phase 0  IDENTIFY    → catalog scan, engine fingerprint, originality +
-                       size screening, game selection
+                       CrazyGames-exclusion check + size cap, game selection
+                       (NO engine priority, NO platform preference)
 Phase 1  DOWNLOAD    → full asset pull + integrity audit
 Phase 2  PATCH       → SDK extraction → neutral game-driver.js
 Phase 3  VALIDATE    → Playwright + application firewall
@@ -43,29 +47,36 @@ no external reference at all (Phase 5). See Phase 4 step 2 and Phase 5.
 
 ## Phase 0 — Identify the game and its engine
 
-1. **Catalog scan** — GameSnacks' catalog is one big JSON payload. Fetch the
-   homepage and pull every `/games/<id>` link (≈423 IDs). Each game page yields
-   the **real CDN URL** hidden behind `h5games.usercontent.goog` plus its title.
+1. **Catalog scan** — scan ANY portal's catalog: no platform is preferred
+   (v1.5.0). Known entry points, for reference only: GameSnacks' catalog is
+   one big JSON payload (fetch the homepage, pull every `/games/<id>` link
+   ≈423 IDs — each game page yields the **real CDN URL** hidden behind
+   `h5games.usercontent.goog` plus its title); Poki's list is the sitemap
+   `https://poki.com/en/sitemaps/games.xml`. Pick candidates wherever
+   ORIGINAL games are found.
 2. **Engine fingerprint** — fetch each candidate's `index.html` and grep the
    runtime JS for:
    - `c3runtime` / `Scirra` → Construct 3
    - `Phaser` (check version, CE vs 3) → Phaser
    - `pixi.js` / `PIXI` → PixiJS
    - `cocos` → Cocos Creator
-   - `BABYLON` → **disqualify (3D)**
+   - `BABYLON` → Babylon.js (3D) → **eligible** (follow the generic WebGL
+     playbook: capture, driver, de-brand — 3D is acceptable since v1.5.0)
    - `UNITY` / `UnityLoader` / `createUnityInstance` → Unity WebGL build →
      **eligible** (see the Unity WebGL playbook below)
    - `godot` / `@godotengine/godot` / `engine.startEngine` / a `.pck` +
-     `.wasm` pair → Godot WebGL build → **eligible if under the 20 MB
-     size cap** (see the Godot WebGL playbook below)
+     `.wasm` pair → Godot WebGL build → **eligible** (see the Godot WebGL
+     playbook below)
 3. **Watch for false positives**: matching the substring `constructor` is NOT
    Construct; "Phaser" inside a comment is NOT Phaser. Confirm on the runtime
    file, not the index.
-4. **Verify 2D-ness before committing**: probe for 3D markers (`BABYLON`,
-   `webgl` 3D pipelines, camera.z). One candidate (Retro Drift) turned out to
-   be Babylon.js despite an initial "Construct" match — it was disqualified.
-5. **Unity WebGL builds are eligible (v1.3.0)**: `UNITY`/`UnityLoader`
-   markers are NOT a disqualification anymore. Recognize the export
+4. **All game types are acceptable (v1.5.0)**: 2D AND 3D games alike — the
+   engine type alone is never a disqualification. Still fingerprint the
+   engine correctly (one candidate (Retro Drift) turned out to be Babylon.js
+   despite an initial "Construct" match) so you follow the right playbook,
+   but a 3D engine is eligible like any other.
+5. **Unity WebGL builds are eligible (since v1.3.0)**: `UNITY`/`UnityLoader`
+   markers are not a disqualification. Recognize the export
    (`createUnityInstance` + `Build/*.wasm`/`*.data`/`*.framework.js`, or the
    older `UnityLoader` + `Build/*.json`), download the whole build and follow
    the Unity WebGL playbook below.
@@ -83,15 +94,22 @@ Selection criteria, in order:
    familiar genre with real added mechanics (novel physics, unusual goal,
    original twist) is fine — "known genre" is not the same as "known
    concept".
-2. **Engine**: Unity WebGL and Godot WebGL games are PRIORITY candidates —
-   actively seek them out and prefer them over other engines when choosing
-   what to process; 2D web-native games come next.
-3. **Size — hard cap (v1.4.0)**: the total download must stay **under
-   20 MB for Unity AND Godot builds** (compressed `.wasm` + `.data`/`.pck`
-   + all assets), and under ~20 MB for any other engine too. Measure the
-   sizes BEFORE committing (HEAD requests on the build files); a build
-   over the cap is disqualified — no exception, no "audit later".
-4. Clean asset manifest; no aggressive DRM.
+2. **NO engine priority, NO platform preference (v1.5.0)**: every engine
+   (Construct, Phaser, PixiJS, Cocos, Unity WebGL, Godot WebGL, custom…)
+   and every game type (2D, 3D…) is treated EQUALLY — the fingerprint only
+   selects the right playbook, it never ranks candidates. No portal is
+   preferred either.
+3. **NOT on CrazyGames — hard exclusion (v1.5.0)**: a chosen game must
+   NEVER already be published on CrazyGames. BEFORE any download, search
+   `https://www.crazygames.com/search?q=<title keywords>` and browse the
+   result titles: if the same game (same title, or unmistakably the same
+   gameplay) already exists there, the candidate is DISQUALIFIED.
+4. **Size — hard cap for EVERY engine (v1.5.0)**: the total download must
+   stay **under 20 MB for ALL engines alike** (Unity `.wasm`/`.data`, Godot
+   `.wasm`/`.pck`, Construct/Phaser/PixiJS assets, everything). Measure the
+   sizes BEFORE committing (HEAD requests on the build files); a build over
+   the cap is disqualified — no exception, no "audit later".
+5. Clean asset manifest; no aggressive DRM.
 
 ## Phase 1 — Download everything (and audit it)
 
@@ -408,10 +426,11 @@ invent a brand-new title.
 
 ## Unity WebGL playbook (eligible since v1.3.0)
 
-- **Size cap — HARD (v1.4.0)**: the whole build (`.wasm`/`.br`/`.gz` code,
-  `.data`, `StreamingAssets/`, assets) must total **under 20 MB** — measure
-  with HEAD requests on every `Build/` file BEFORE downloading; over the cap
-  = disqualified, no exception.
+- **Size cap — HARD, global rule (v1.5.0)**: the whole build
+  (`.wasm`/`.br`/`.gz` code, `.data`, `StreamingAssets/`, assets) must total
+  **under 20 MB** — the same cap applies to EVERY engine, not just Unity —
+  measure with HEAD requests on every `Build/` file BEFORE downloading; over
+  the cap = disqualified, no exception.
 - **Recognize the export**: `createUnityInstance(canvas, {dataUrl:
   'Build/<name>.data', frameworkUrl: …, codeUrl: 'Build/<name>.wasm'})`
   (2019+) or the older `UnityLoader.instantiate('Build/<name>.json')`. Download
@@ -445,8 +464,9 @@ invent a brand-new title.
 
 ## Godot WebGL playbook (eligible since v1.4.0)
 
-- **Size cap — HARD (v1.4.0)**: same rule as Unity — the whole export
-  (`.wasm`, `.pck`, assets) must total **under 20 MB** before committing.
+- **Size cap — HARD, global rule (v1.5.0)**: the whole export (`.wasm`,
+  `.pck`, assets) must total **under 20 MB** before committing — the same
+  20 MB cap applies to every engine alike.
 - **Recognize the export**: Godot 4 exports use
   `engine.startEngine({mainPack: '…', canvas: …})` from
   `godot.wasm.js`/`godot.js`, loading `Build/<game>.pck` + `godot.wasm`;

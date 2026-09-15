@@ -1,28 +1,33 @@
 # web-game-offliner 🎮
 
 An agent skill for **Codebuff / any .agents-compatible agent**: download any
-web game from a portal (GameSnacks, Famobi, Softgames, Poki, Unity WebGL and
-Godot exports…), strip its platform SDK, patch it into a **100% offline
-standalone build**, validate it with Playwright + an application firewall,
-and deploy it to GitHub Pages **under the game's original name** — with the
-in-game branding completely removed (the shipped game is unnamed) and a
-clean ZIP release. Only original games qualify: classic games built on an
-already-known concept and clones of famous titles are rejected; Unity and
-Godot builds must stay under 20 MB.
+web game from any portal and any engine (GameSnacks, Famobi, Softgames, Poki,
+Construct, Phaser, PixiJS, Unity WebGL, Godot WebGL…), strip its platform
+SDK, patch it into a **100% offline standalone build**, validate it with
+Playwright + an application firewall, and deploy it to GitHub Pages **under
+the game's original name** — with the in-game branding completely removed
+(the shipped game is unnamed) and a clean ZIP release. Game selection is
+originality-driven and nothing else: classic games built on an already-known
+concept and clones of famous titles are rejected; every engine and every game
+type (2D, 3D…) is accepted equally, with NO engine priority and NO platform
+preference; the whole build must stay under a 20 MB size cap; and the chosen
+game must NOT already be published on CrazyGames.
 
 > Proven end-to-end on 5 shipped games (Construct 3, Phaser 2, Phaser 3,
 > PixiJS 5, custom canvas engines) — including the traps: poisoned 404 assets,
 > frozen ad callbacks, 2048px mobile GPU texture limits, minified-code surgery.
 > Unity WebGL exports are eligible since v1.3.0 and Godot exports since
-> v1.4.0 — both are the **priority candidates** during game selection, with
-> a hard 20 MB size cap, and only original games (no classic/known-concept
-> titles) are processed.
+> v1.4.0 — since v1.5.0 there is NO engine priority and NO platform
+> preference anymore: selection is driven by ORIGINALITY only, a hard 20 MB
+> size cap applies to every engine alike, and a game already published on
+> CrazyGames is excluded.
 
 ## What the skill does
 
 ```
 Phase 0  IDENTIFY    catalog scan → engine fingerprint → originality +
-                     size screening → game selection
+                     CrazyGames-exclusion + 20 MB cap → game selection
+                     (no engine priority, no platform preference)
 Phase 1  DOWNLOAD    full asset pull + integrity audit (magic bytes!)
 Phase 2  PATCH       SDK extraction → neutral game-driver.js
 Phase 3  VALIDATE    Playwright + network firewall + mobile emulation
@@ -50,8 +55,13 @@ Every phase encodes the hard-won gotchas that break naive attempts:
   sitelocks are removed entirely
 - ✅ **Original games only** — classic games built on an already-known
   concept (2048, snake, solitaire, memory, Tetris-like, flappy/wordle
-  clones…) and famous-title clones are rejected during selection; Unity and
-  Godot WebGL builds must stay under a hard 20 MB cap
+  clones…) and famous-title clones are rejected during selection
+- ✅ **No engine priority, no platform preference** — any engine, any game
+  type (2D, 3D…), any portal; the fingerprint only picks the right playbook
+- ✅ **CrazyGames exclusion** — the chosen game is checked against
+  crazygames.com before any download: already published there = disqualified
+- ✅ **20 MB size cap for EVERY engine** — HEAD-measured before download,
+  no exception (Unity, Godot, Construct, Phaser, PixiJS, custom…)
 - ✅ **Game-files-only ZIP** — no README, no docs, no tooling inside the archive
 - ✅ **Clean deliverable file names** — no `poki_nettoyé.js`-style names; the
   repo looks like a professional game project, capture/test scripts stay in
@@ -61,6 +71,8 @@ Every phase encodes the hard-won gotchas that break naive attempts:
   subsection per platform)
 - ✅ Unity WebGL playbook — capture, compression handling, SendMessage/jslib
   shims, bundle-safe de-branding
+- ✅ Godot WebGL playbook — `.pck` capture, side files, MIME, no-binary-
+  surgery de-branding
 - ✅ Live-URL verification after Pages build, not just local testing
 
 ## Install

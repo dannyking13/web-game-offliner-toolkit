@@ -3,6 +3,27 @@
 All notable changes to the **web-game-offliner** skill.
 Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [1.5.0] — 2026-09-15
+
+### Changed
+- **Selection is originality-driven, NOTHING else**: the engine-priority
+  rule is REMOVED — no more Unity/Godot preference, 2D web-native games no
+  longer "come next"; every engine and every game type (2D, 3D…) is treated
+  equally, and no portal/platform is preferred either. Only the originality
+  filter decides which games are processed.
+- **3D is fully acceptable**: `BABYLON` no longer disqualifies a candidate —
+  3D engines follow the generic WebGL pipeline like any other engine.
+- **Hard 20 MB size cap extended to EVERY engine**: previously explicit for
+  Unity/Godot with a softer "~20 MB" note for others, the cap is now one
+  single rule for all engines alike (Unity, Godot, Construct, Phaser,
+  PixiJS, custom…), HEAD-measured before download, no exception.
+
+### Added
+- **CrazyGames exclusion — hard rule**: the chosen game must NEVER already
+  be published on CrazyGames. Before any download, search
+  `https://www.crazygames.com/search?q=<title keywords>`; same title or
+  unmistakably the same gameplay already there = candidate disqualified.
+
 ## [1.4.0] — 2026-09-15
 
 ### Changed
