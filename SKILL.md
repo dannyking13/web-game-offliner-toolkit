@@ -1,9 +1,9 @@
 ---
 name: web-game-offliner
-description: Download any web game (GameSnacks, Famobi, Softgames, Poki, Unity WebGL exports, etc.), strip its platform SDK, patch it into a fully self-contained offline build with a neutral driver, validate it with Playwright plus an application-level firewall, then deploy it to GitHub Pages under a NEW delivery title with the original branding fully removed (the game itself ships unnamed) and a clean ZIP release. Use when the user asks to localize, offline-ify, self-host, mirror, de-SDK, or republish a browser game.
-version: 1.3.1
+description: Download any web game (GameSnacks, Famobi, Softgames, Poki, Unity WebGL and Godot exports, etc.), strip its platform SDK, patch it into a fully self-contained offline build with a neutral driver, validate it with Playwright plus an application-level firewall, then deploy it to GitHub Pages under the game's ORIGINAL name (repo, Pages URL and ZIP all reflect the original game title — no invented name) with the in-game branding fully removed (the game itself ships unnamed) and a clean ZIP release. Only original games are eligible: no classic games built on an already-known concept, no clones of famous titles; Unity and Godot WebGL builds must stay under 20 MB. Use when the user asks to localize, offline-ify, self-host, mirror, de-SDK, or republish a browser game.
+version: 1.4.0
 author: buffy
-tags: [games, offline, download, playwright, github-pages, game-snacks]
+tags: [games, offline, download, playwright, github-pages, game-snacks, godot]
 ---
 
 # Web Game Offliner
@@ -17,26 +17,27 @@ custom canvas engines; Unity WebGL supported since v1.3.0).
 ## Pipeline overview
 
 ```
-Phase 0  IDENTIFY    → catalog scan, engine fingerprint, game selection
+Phase 0  IDENTIFY    → catalog scan, engine fingerprint, originality +
+                       size screening, game selection
 Phase 1  DOWNLOAD    → full asset pull + integrity audit
 Phase 2  PATCH       → SDK extraction → neutral game-driver.js
 Phase 3  VALIDATE    → Playwright + application firewall
 Phase 4  DEPLOY      → GitHub repo + Pages + ZIP release v1.0.0, ALL named
-                       with the delivery title (invented in Phase 5 step 0
-                       first) — game files only in the ZIP
-Phase 5  DE-BRAND    → sweep EVERY screen for the old title, remove it
-                       everywhere (neutral artwork at most — no new name is
-                       inserted in-game), update metadata, republish
+                       with the game's ORIGINAL name — game files only in
+                       the ZIP
+Phase 5  DE-BRAND    → sweep EVERY screen for old in-game branding, remove
+                       it everywhere (neutral artwork at most — the game
+                       ships unnamed), update metadata, republish
 ```
 
 Never skip Phase 3: "it loads locally" is not "it works offline".
 
-**Delivery naming is non-negotiable (v1.3.0)**: every game is delivered with
-its original name completely removed — the portal's original title must not
-appear anywhere in the delivery. The NEW invented title is used ONLY for
-delivery naming (repo name, Pages URL, ZIP file name, metadata); it is NOT
-integrated inside the game anymore — the shipped game itself carries no name
-or external reference at all. See Phase 4 step 2 and Phase 5.
+**Delivery naming is non-negotiable (v1.4.0)**: the repo name, Pages URL,
+ZIP file name and README heading MUST reflect the game's ORIGINAL title —
+the exact name the portal uses for the game. No invented title exists
+anymore, anywhere in the delivery. Inside the game itself, in-game branding
+is still fully removed: the shipped build carries no name, no logo text and
+no external reference at all (Phase 5). See Phase 4 step 2 and Phase 5.
 
 ---
 
@@ -54,7 +55,9 @@ or external reference at all. See Phase 4 step 2 and Phase 5.
    - `BABYLON` → **disqualify (3D)**
    - `UNITY` / `UnityLoader` / `createUnityInstance` → Unity WebGL build →
      **eligible** (see the Unity WebGL playbook below)
-   - `godot` → **disqualify**
+   - `godot` / `@godotengine/godot` / `engine.startEngine` / a `.pck` +
+     `.wasm` pair → Godot WebGL build → **eligible if under the 20 MB
+     size cap** (see the Godot WebGL playbook below)
 3. **Watch for false positives**: matching the substring `constructor` is NOT
    Construct; "Phaser" inside a comment is NOT Phaser. Confirm on the runtime
    file, not the index.
@@ -67,11 +70,28 @@ or external reference at all. See Phase 4 step 2 and Phase 5.
    older `UnityLoader` + `Build/*.json`), download the whole build and follow
    the Unity WebGL playbook below.
 
-Selection criteria: **Unity WebGL games are PRIORITY candidates — actively
-seek them out and prefer them over other engines when choosing what to
-process**; 2D web-native games come next; total size under ~20 MB (audit
-larger Unity builds before committing); clean asset manifest; no aggressive
-DRM.
+Selection criteria, in order:
+
+1. **Originality FIRST (v1.4.0)**: process only games with an original
+   concept or a genuinely fresh twist. **Reject classic games** built on a
+   well-known concept — memory/match-pairs, solitaire, 2048, snake, Tetris,
+   brick breakers, sudoku, minesweeper, mahjong, chess/checkers, pinball,
+   flappy-style clones, wordle-style clones, bubble shooters presented as
+   "the classic"… Also reject transparent clones or reskins of famous
+   titles. Judge from the game's own screenshots/gameplay footage: if the
+   whole pitch can be summed up as "classic <known game>", it is out. A
+   familiar genre with real added mechanics (novel physics, unusual goal,
+   original twist) is fine — "known genre" is not the same as "known
+   concept".
+2. **Engine**: Unity WebGL and Godot WebGL games are PRIORITY candidates —
+   actively seek them out and prefer them over other engines when choosing
+   what to process; 2D web-native games come next.
+3. **Size — hard cap (v1.4.0)**: the total download must stay **under
+   20 MB for Unity AND Godot builds** (compressed `.wasm` + `.data`/`.pck`
+   + all assets), and under ~20 MB for any other engine too. Measure the
+   sizes BEFORE committing (HEAD requests on the build files); a build
+   over the cap is disqualified — no exception, no "audit later".
+4. Clean asset manifest; no aggressive DRM.
 
 ## Phase 1 — Download everything (and audit it)
 
@@ -181,32 +201,32 @@ Run **all** of these; each has caught real bugs:
 1. **ZIP release — game files ONLY (v1.3.0)**: the archive must contain
    nothing but what the game needs to run. **No README, no docs, no license
    files, no `.git`, no tooling, no leftover capture scripts.** Verify with
-   `unzip -l <zip>` before shipping. Name it `<new-title>-v1.0.0.zip` (delivery
-   title only — see step 2); verify zero `.git` entries inside.
+   `unzip -l <zip>` before shipping. Name it `<original-game-name>-v1.0.0.zip`
+   — the ORIGINAL game title (kebab-case), see step 2; verify zero `.git`
+   entries inside.
 2. **GitHub repo** (one per game), push, enable **Pages via API**
    (`gh api repos/<owner>/<repo>/pages -X POST`), wait for the Pages build
    (poll the API until `status: built`).
-   **Repo naming rule — MANDATORY (v1.2.0, supersedes the old rule)**: the
-   repo name MUST be the game's **NEW invented title** (Phase 5 step 0,
-   kebab-case: `frosty-rush`, `pocket-golf`…), NEVER the original portal
-   game id. **Every game is delivered with its original name completely
-   removed**: the original name must not survive anywhere in the delivery —
-   not in the repo name, not in the Pages URL (`<owner>.github.io/<new-title>/`),
-   not in the ZIP file name, not in the README heading. No prefix, no suffix,
-   no `-offline`. Invent the title BEFORE creating the repo. Since v1.3.0 the
-   invented title is a **delivery label only**: it is NOT written inside the
-   game (no splash, no logo, no `<title>` text beyond the delivery title,
-   nothing). ⚠️ Do NOT confuse this repo with this skill's own repo
+   **Repo naming rule — MANDATORY (v1.4.0, supersedes v1.2.0/v1.3.0)**: the
+   repo name MUST be the game's **ORIGINAL title** — exactly the name the
+   portal gives the game (kebab-case: `drive-mad`, `jewels-blitz-5`…), so
+   the repo name, the Pages URL (`<owner>.github.io/<original-name>/`) and
+   the ZIP file name all **reflect the original game name**. Never use an
+   invented title — that mechanism no longer exists (v1.4.0). Never use the
+   original game id either if it differs from the human-readable title
+   (prefer `jewels-blitz-5` over `jb5_1080`), and never a `-offline`/`-game`
+   suffix. ⚠️ Do NOT confuse this game repo with this skill's own repo
    (`web-game-offliner`): never create, fork over, or overwrite a repo named
    `web-game-offliner` when publishing a game.
 3. **Live verification**: Playwright against the GitHub Pages URL — 0 errors,
    0 third-party requests, game advances past menus.
-4. **README.md — STRICT template (v1.3.0, in ENGLISH)**. Exactly TWO sections,
+4. **README.md — STRICT template (v1.4.0, in ENGLISH)**. The heading is the
+   game's ORIGINAL title (same as the repo name). Exactly TWO sections,
    nothing else — no tech stack, no engine names, no modification lists, no
    run instructions, no badges, no screenshots section:
 
    ```markdown
-   # <New Title>
+   # <Original Game Title>
 
    ## About the game
    <A genuinely flattering, vivid description of what playing the game feels
@@ -246,49 +266,44 @@ Run **all** of these; each has caught real bugs:
 
 ## Phase 5 — De-brand the game (MANDATORY for every published game)
 
-Every deployed game gets its **original branding completely removed**: never
-ship the portal's original title, logos or external references. Since
-**v1.3.0 there is NO new in-game title anymore**: no replacement name, no
-generated title image, no rebranding. The game ships **unnamed** — where the
-old logo or title used to be, put **neutral artwork** (a clean abstract
-shape, decorative frame or emblem with NO text) or nothing at all. The
-invented title exists ONLY as the delivery label: repo name, Pages URL, ZIP
-file name and README heading. The AI agent must invent it itself — pick a
-short (2 words max), catchy, genre-fitting name (e.g. "Frosty Rush" for a
-snowman puzzle game, "Pocket Golf" for a mini-golf game). Do not ask the user
-to name it; propose it in the final report.
+Every deployed game gets its **in-game branding completely removed**: the
+shipped build carries no title, no logos, no external references. The game
+ships **unnamed** — where the old logo or title used to be, put **neutral
+artwork** (a clean abstract shape, decorative frame or emblem with NO text)
+or nothing at all. **The ORIGINAL game name is NOT erased from the delivery
+itself**: it is the repo name, the Pages URL, the ZIP file name and the
+README heading (Phase 4). There is NO invented title anywhere — that
+mechanism was removed in v1.4.0.
 
-**Step 0 — invent the title BEFORE deploying**: Phase 4 names the repo, the
-Pages URL and the ZIP after this title, so pick it (and run the uniqueness
-check below) *before* creating anything public.
+**ALL-OR-NOTHING RULE (zero tolerance)**: the in-game branding must be
+removed from **every screen of the game**, not just the first one. A build
+where a name/logo survives anywhere (menu, level select, settings, pause,
+game over, credits…) is a **FAILED build**. When this skill ships a game,
+no name may appear inside the game: no asset, no string, no metadata, on
+any screen — and **no new name is inserted in its place**: the game simply
+has no name.
 
-**ALL-OR-NOTHING RULE (zero tolerance)**: the old branding must be removed
-from **every screen of the game**, not just the first one. A build where the
-old name/logo survives anywhere (menu, level select, settings, pause, game
-over, credits…) is a **FAILED build**. When this skill ships a game, the old
-title must be completely gone: no asset, no string, no metadata, on any
-screen — and since v1.3.0, **no new name is inserted in its place**: the
-game simply has no name.
+> **Scope note (v1.4.0 — supersedes v1.2.0/v1.3.0)**: the original game
+> title lives ONLY on delivery surfaces — repo name, Pages URL, ZIP file
+> name, README heading, `<title>`/PWA metadata. It is NOT integrated inside
+> the game: no in-game logo, no splash text, no title-screen wording. Inside
+> the shipped build a case-insensitive grep for the original game name must
+> return **0 hits** (0 in-game hits), while the delivery surfaces carry it
+> as-is.
 
-> **Scope note (v1.3.0 — supersedes v1.2.0)**: the invented title is a
-> **delivery label only** — repo name, Pages URL, ZIP file name, README
-> heading, `<title>`/PWA metadata. It is NOT integrated inside the game: no
-> in-game logo, no splash text, no title-screen wording. The original portal
-> name must not appear in any delivered artifact; a case-insensitive grep of
-> the shipped build + repo for the original game id must return **0 hits**.
-
-**MANDATORY — Uniqueness check before committing to a name**: before picking
-the name, list the repos on BOTH publishing accounts and make sure the game
-hasn't already been cleaned/published under that name (or a name too similar
-to it):
+**MANDATORY — Collision check before creating the repo**: list the repos on
+BOTH publishing accounts and make sure this game hasn't already been
+cleaned/published (or the original-name repo doesn't already exist for a
+different game):
 
 - `dannyking6`  → `gh api users/dannyking6/repos?per_page=100 --jq '.[].name'`
 - `d2658182-hub` → `gh api users/d2658182-hub/repos?per_page=100 --jq '.[].name'`
 
 If a repo (or a previous build folder in the workspace) already matches the
-candidate name or the same original game, reuse that existing work instead of
-deploying a duplicate — and pick a different candidate name if the collision
-is on the *name* itself. The name must be unique across both accounts.
+original game name or the same game, reuse that existing work instead of
+deploying a duplicate. If the name itself is taken by an unrelated repo,
+resolve the collision minimally (e.g. append the portal game id) — do NOT
+invent a brand-new title.
 
 1. **Sweep ALL screens for the old title (do this FIRST)** — never assume the
    title lives in one place: portals routinely brand several screens. Enumerate
@@ -301,8 +316,8 @@ is on the *name* itself. The name must be unique across both accounts.
    - font-rendered Text objects in scene data (grep the code + scene JSON for
      the old name and its misspellings), then remove the string — or replace
      it with neutral wording ("Options", "Back"…) that carries no name
-   - i18n/locale strings, HTML overlays, CSS background images, PWA manifest,
-     `<title>`/meta tags
+   - i18n/locale strings, HTML overlays, CSS background images, PWA manifest
+     `name`/`short_name`, in-game `<title>`/meta strings
    - portal credits/references ("A game from X", "Powered by Y", portal
      links and branding): remove them entirely — the game ships with **no
      external reference**
@@ -334,9 +349,9 @@ is on the *name* itself. The name must be unique across both accounts.
    - Unity WebGL: swap the logo/title sprites or textures for same-size
      neutral images, or neutralize the UI element that renders them.
 4. **Update all metadata**: `<title>` + `meta[name=application-name]` in
-   index.html and PWA manifest `name`/`short_name` carry the **delivery
-   title** (Phase 5 step 0) — these are delivery surfaces, not in-game
-   screens; i18n strings that embed the old name are removed or neutralized;
+   index.html and PWA manifest `name`/`short_name` carry the **original
+   game title** (delivery surfaces, not in-game screens); i18n strings that
+   embed a name are removed or neutralized;
    `GameData.BuildTitle`-style constants that expose the old name are emptied
    or removed.
 5. **Verify the de-branding is COMPLETE — screen by screen**:
@@ -345,10 +360,12 @@ is on the *name* itself. The name must be unique across both accounts.
      logo or wording is rendered where the old branding was (neutral artwork
      contains no letters);
    - grep the ENTIRE shipped build (HTML/JS/JSON/CSS, case-insensitive) for
-     the old game name AND the portal name — assert **0 hits**;
-   - also assert the NEW title does NOT appear inside the game itself
-     (0 in-game hits — it may live only on delivery surfaces: repo, Pages
-     URL, ZIP name, README, `<title>`/PWA metadata);
+     the original game name AND the portal name — assert **0 in-game hits**
+     (the original name lives only on delivery surfaces: repo name, Pages
+     URL, ZIP name, README heading, `<title>`/PWA metadata — nothing inside
+     the game);
+   - assert NO invented title exists anywhere (that mechanism is gone since
+     v1.4.0) — every delivery surface carries the original name;
    - open the screens players rarely see (credits, about, settings, game
      over): a sweep that misses one of them is not done;
    - 0 console errors throughout.
@@ -391,6 +408,10 @@ is on the *name* itself. The name must be unique across both accounts.
 
 ## Unity WebGL playbook (eligible since v1.3.0)
 
+- **Size cap — HARD (v1.4.0)**: the whole build (`.wasm`/`.br`/`.gz` code,
+  `.data`, `StreamingAssets/`, assets) must total **under 20 MB** — measure
+  with HEAD requests on every `Build/` file BEFORE downloading; over the cap
+  = disqualified, no exception.
 - **Recognize the export**: `createUnityInstance(canvas, {dataUrl:
   'Build/<name>.data', frameworkUrl: …, codeUrl: 'Build/<name>.wasm'})`
   (2019+) or the older `UnityLoader.instantiate('Build/<name>.json')`. Download
@@ -422,6 +443,35 @@ is on the *name* itself. The name must be unique across both accounts.
   WebGL context loss, and test mobile emulation for touch input (many Unity
   portal games are mobile-first).
 
+## Godot WebGL playbook (eligible since v1.4.0)
+
+- **Size cap — HARD (v1.4.0)**: same rule as Unity — the whole export
+  (`.wasm`, `.pck`, assets) must total **under 20 MB** before committing.
+- **Recognize the export**: Godot 4 exports use
+  `engine.startEngine({mainPack: '…', canvas: …})` from
+  `godot.wasm.js`/`godot.js`, loading `Build/<game>.pck` + `godot.wasm`;
+  Godot 3 uses `Engine.load("wasm.js")` + `engine.start_game(...)`. The
+  `.pck` + `.wasm` pair is the reliable fingerprint.
+- **Download the whole export**: `godot.wasm`, `godot.js`/`godot.wasm.js`,
+  `*.pck`, plus the side files (`*.audio.worklet.js`, `*.worker.js`,
+  `*.renderer.js` in Godot 4.x) — missing side files = boot failure.
+- **Compression**: same rule as Unity — GitHub Pages cannot set
+  `Content-Encoding`; ship uncompressed variants and make the loader config
+  match.
+- **Sitelock / SDK wrappers**: portal wrappers (Poki SDK, Crazy, Famobi)
+  call into the game via JS before/after engine start — neutralize them in
+  `game-driver.js` exactly like any other build (grep `pokiSDK`, `famobi`,
+  `CrazyGames`, `sg.`).
+- **Engine-start failure mode**: if the game never renders, check the
+  browser console for `pck` load errors (wrong path or `Content-Type`) —
+  Godot aborts silently otherwise. Serve `.pck` as `application/octet-stream`
+  and `.wasm` as `application/wasm`.
+- **De-branding**: Godot scene/asset branding lives inside the `.pck`; do
+  NOT attempt binary surgery — neutralize in-game name sprites/UI from the
+  project side only when a rebuild is possible, otherwise hide the branding
+  element via runtime patching (DOM overlay or engine API) and verify every
+  screen in Playwright like any other build.
+
 ## Hard-won gotchas (read before debugging)
 
 - **404-HTML-as-asset** is everywhere: a "successful" download can be a Google
@@ -445,11 +495,16 @@ is on the *name* itself. The name must be unique across both accounts.
   settings, pause, game over, credits… Removing it only from the first screen
   ships the old branding to every player who opens the credits. Sweep every
   screen, then verify screen by screen (Phase 5, steps 1 and 5).
-- **The original name must be gone from the delivery (v1.3.0)**: repo name,
-  Pages URL path, ZIP name, README title, `<title>`, PWA manifest — grep the
-  delivered repo for the original game id and assert 0 hits. And the game
-  itself ships unnamed: no new title inside the game, no external references
-  (portal credits, "powered by", portal links) anywhere.
+- **The delivery name IS the original name (v1.4.0)**: repo name, Pages URL
+  path, ZIP name, README title, `<title>`, PWA manifest all carry the game's
+  ORIGINAL title — no invented name anywhere. And the game itself ships
+  unnamed: the original name must have 0 hits INSIDE the shipped build (grep
+  HTML/JS/JSON/CSS case-insensitively), and no external references (portal
+  credits, "powered by", portal links) anywhere.
+- **Originality screening (v1.4.0)**: reject classic/known-concept games
+  (2048, snake, solitaire, Tetris-like, memory, flappy clones…) and famous-
+  title clones BEFORE downloading — read screenshots/gameplay, not just the
+  title.
 - **ZIP contents (v1.3.0)**: game files ONLY — no README, no docs, no
   capture/test scripts. `unzip -l` before every release.
 - **File names must be clean (v1.3.0)**: no `poki_nettoyé.js`, no

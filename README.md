@@ -1,30 +1,35 @@
 # web-game-offliner 🎮
 
 An agent skill for **Codebuff / any .agents-compatible agent**: download any
-web game from a portal (GameSnacks, Famobi, Softgames, Poki, Unity WebGL
-exports…), strip its platform SDK, patch it into a **100% offline standalone
-build**, validate it with Playwright + an application firewall, and deploy it
-to GitHub Pages **under a new delivery title** — with the original branding
-completely removed from the game itself (the shipped game is unnamed) and a
-clean ZIP release.
+web game from a portal (GameSnacks, Famobi, Softgames, Poki, Unity WebGL and
+Godot exports…), strip its platform SDK, patch it into a **100% offline
+standalone build**, validate it with Playwright + an application firewall,
+and deploy it to GitHub Pages **under the game's original name** — with the
+in-game branding completely removed (the shipped game is unnamed) and a
+clean ZIP release. Only original games qualify: classic games built on an
+already-known concept and clones of famous titles are rejected; Unity and
+Godot builds must stay under 20 MB.
 
 > Proven end-to-end on 5 shipped games (Construct 3, Phaser 2, Phaser 3,
 > PixiJS 5, custom canvas engines) — including the traps: poisoned 404 assets,
 > frozen ad callbacks, 2048px mobile GPU texture limits, minified-code surgery.
-> Unity WebGL exports are eligible since v1.3.0 — and are the **priority
-> candidates** during game selection.
+> Unity WebGL exports are eligible since v1.3.0 and Godot exports since
+> v1.4.0 — both are the **priority candidates** during game selection, with
+> a hard 20 MB size cap, and only original games (no classic/known-concept
+> titles) are processed.
 
 ## What the skill does
 
 ```
-Phase 0  IDENTIFY    catalog scan → engine fingerprint → game selection
+Phase 0  IDENTIFY    catalog scan → engine fingerprint → originality +
+                     size screening → game selection
 Phase 1  DOWNLOAD    full asset pull + integrity audit (magic bytes!)
 Phase 2  PATCH       SDK extraction → neutral game-driver.js
 Phase 3  VALIDATE    Playwright + network firewall + mobile emulation
 Phase 4  DEPLOY      GitHub repo + Pages + README + game-files-only ZIP,
-                     all under the delivery title (invented first)
-Phase 5  DE-BRAND    sweep EVERY screen for the old title, remove it
-                     everywhere — neutral artwork at most, NO new name is
+                     all under the game's original name
+Phase 5  DE-BRAND    sweep EVERY screen for in-game branding, remove it
+                     everywhere — neutral artwork at most, NO name is
                      inserted in-game — then metadata, republish
 ```
 
@@ -38,11 +43,15 @@ Every phase encodes the hard-won gotchas that break naive attempts:
 - ✅ Old-title removal on **every screen** (splash, menu, level select,
   settings, pause, game over, credits…) — grep the whole build for the old
   name, assert 0 hits, verify screen by screen in Playwright
-- ✅ **No in-game name, no external references** — since v1.3.0 the game
-  ships unnamed: the invented title is a delivery label only (repo name,
-  Pages URL, ZIP name, README heading, metadata); where the old logo was,
-  neutral artwork or nothing. Portal credits, "powered by" links and
+- ✅ **No in-game name, no external references** — since v1.4.0 the game
+  ships unnamed and the delivery keeps the game's ORIGINAL name: repo,
+  Pages URL, ZIP name and README heading all reflect it; where the old logo
+  was, neutral artwork or nothing. Portal credits, "powered by" links and
   sitelocks are removed entirely
+- ✅ **Original games only** — classic games built on an already-known
+  concept (2048, snake, solitaire, memory, Tetris-like, flappy/wordle
+  clones…) and famous-title clones are rejected during selection; Unity and
+  Godot WebGL builds must stay under a hard 20 MB cap
 - ✅ **Game-files-only ZIP** — no README, no docs, no tooling inside the archive
 - ✅ **Clean deliverable file names** — no `poki_nettoyé.js`-style names; the
   repo looks like a professional game project, capture/test scripts stay in

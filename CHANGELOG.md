@@ -3,6 +3,31 @@
 All notable changes to the **web-game-offliner** skill.
 Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [1.4.0] — 2026-09-15
+
+### Changed
+- **Delivery naming restored to the ORIGINAL game name (supersedes
+  v1.2.0/v1.3.0)**: the repo name, Pages URL, ZIP file name and README
+  heading must all reflect the game's original title exactly — the invented
+  delivery-title mechanism is removed entirely. In-game branding is still
+  fully removed: the shipped game carries no name (0 in-game hits for the
+  original name), with neutral artwork or nothing where the old logo was.
+- **Originality filter in Phase 0**: classic games built on an
+  already-known concept (2048, snake, solitaire, memory, Tetris-like,
+  flappy/wordle clones, bubble-shooter "classics"…) and clones/reskins of
+  famous titles are rejected before download; familiar genres with a real
+  original twist remain eligible.
+- **Hard 20 MB size cap made explicit for Unity** (previously an
+  "audit-larger-builds" soft rule): HEAD-measure every `Build/` file before
+  committing; over the cap = disqualified.
+
+### Added
+- **Godot WebGL support**: recognition (`engine.startEngine` / `.pck` +
+  `.wasm` fingerprint), full-export capture including side worklet/worker
+  files, uncompressed-variant delivery, MIME requirements, SDK-wrapper
+  neutralization, no-binary-surgery de-branding guidance — under the same
+  hard 20 MB size cap as Unity.
+
 ## [1.3.1] — 2026-09-12
 
 ### Changed
