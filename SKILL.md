@@ -1,9 +1,9 @@
 ---
 name: web-game-offliner
-description: Download any web game from any portal and any engine (Softgames, Poki, Construct, Phaser, PixiJS, Unity WebGL, Godot WebGL, etc.), strip its platform SDK, patch it into a fully self-contained offline build with a neutral driver, validate it with Playwright plus an application-level firewall, then deploy it to GitHub Pages under the game's ORIGINAL name (repo, Pages URL and ZIP all reflect the original game title — no invented name) with the in-game branding fully removed (the game itself ships unnamed) and a clean ZIP release. Game selection is originality-driven and NOTHING else: only games with an original concept are eligible — no classic games built on an already-known concept, no clones of famous titles; any engine and any game type (2D, 3D…) is acceptable, with NO engine priority and NO platform preference. The chosen game must NOT already be distributed on GamePix or GameMonetize (verify before committing), and the whole build must stay under a 20 MB size cap for EVERY engine. Use when the user asks to localize, offline-ify, self-host, mirror, de-SDK, or republish a browser game.
-version: 1.6.0
+description: Download any web game from any portal and any engine (Softgames, Poki, Construct, Phaser, PixiJS, Unity WebGL, Godot WebGL, etc.), strip its platform SDK, patch it into a fully self-contained offline build with a neutral driver, validate it with Playwright plus an application-level firewall, then deploy it to GitHub Pages under the game's ORIGINAL name (repo, Pages URL and ZIP all reflect the original game title — no invented name) with the in-game branding fully removed (the game itself ships unnamed) and a clean ZIP release. Game selection is originality-driven and NOTHING else: only games with an original concept are eligible — no classic games built on an already-known concept, no clones of famous titles; any engine and any game type (2D, 3D…) is acceptable, with NO engine priority and NO platform preference. The chosen game must NOT already be distributed on GamePix or GameMonetize (verify before committing), Famobi-licensed games are excluded even when they surface on other portals through the Famobi wrapper, and the whole build must stay under a 20 MB size cap for EVERY engine. Use when the user asks to localize, offline-ify, self-host, mirror, de-SDK, or republish a browser game.
+version: 1.7.0
 author: buffy
-tags: [games, offline, download, playwright, github-pages, gamepix, gamemonetize, godot]
+tags: [games, offline, download, playwright, github-pages, gamepix, gamemonetize, famobi, godot]
 ---
 
 # Web Game Offliner
@@ -15,15 +15,16 @@ then deploy it. This skill encodes a pipeline proven end-to-end on 5 games
 (Construct 3, Phaser 2/3, PixiJS 5, custom canvas engines; Unity WebGL
 supported since v1.3.0, Godot since v1.4.0). Any engine and any game type is
 eligible — the only hard filters are ORIGINALITY, the 20 MB size cap and the
-distribution-exclusion rule (a game already on GamePix or GameMonetize is
-out).
+distribution-exclusion rules (a game already on GamePix or GameMonetize is
+out, and so is any Famobi-licensed game — even via a third-party portal).
 
 ## Pipeline overview
 
 ```
 Phase 0  IDENTIFY    → catalog scan, engine fingerprint, originality +
-                       GamePix/GameMonetize-exclusion check + size cap, game
-                       selection (NO engine priority, NO platform preference)
+                       GamePix/GameMonetize/Famobi-exclusion checks + size
+                       cap, game selection (NO engine priority, NO platform
+                       preference)
 Phase 1  DOWNLOAD    → full asset pull + integrity audit
 Phase 2  PATCH       → SDK extraction → neutral game-driver.js
 Phase 3  VALIDATE    → Playwright + application firewall
@@ -108,12 +109,23 @@ Selection criteria, in order:
      `/games?search=<keywords>`)
    If the same game (same title, or unmistakably the same gameplay) already
    exists on either platform, the candidate is DISQUALIFIED.
-4. **Size — hard cap for EVERY engine (v1.5.0)**: the total download must
+4. **NO Famobi games — hard exclusion (v1.7.0)**: Famobi-licensed games are
+   out EVEN when they surface on another portal, through Famobi's embed
+   wrapper. At fingerprint time, BEFORE any download, check the game page
+   and its `index.html`/runtime for the Famobi signatures:
+   - hosts/iframe URLs on `famobi.com`, `play.famobi.com`,
+     `games.cdn.famobi.io`, `cdn.famobi.com`
+   - the Famobi loader script (`famobi.js`, `famobi_noa.js`)
+   - `window.famobi*` / `Famobi.*` globals and `data-famobi*` attributes
+   - "Famobi" / "Powered by Famobi" credits in the page or the game
+   Any hit = the game is Famobi-licensed = DISQUALIFIED, no matter which
+   portal lists it.
+5. **Size — hard cap for EVERY engine (v1.5.0)**: the total download must
    stay **under 20 MB for ALL engines alike** (Unity `.wasm`/`.data`, Godot
    `.wasm`/`.pck`, Construct/Phaser/PixiJS assets, everything). Measure the
    sizes BEFORE committing (HEAD requests on the build files); a build over
    the cap is disqualified — no exception, no "audit later".
-5. Clean asset manifest; no aggressive DRM.
+6. Clean asset manifest; no aggressive DRM.
 
 ## Phase 1 — Download everything (and audit it)
 
@@ -528,6 +540,13 @@ invent a brand-new title.
   (2048, snake, solitaire, Tetris-like, memory, flappy clones…) and famous-
   title clones BEFORE downloading — read screenshots/gameplay, not just the
   title.
+- **Famobi games are out even via third-party portals (v1.7.0)**: a portal
+  can license and embed Famobi games under its own skin — the wrapper still
+  betrays it. Before downloading, grep the candidate's page/index/runtime
+  for `famobi` case-insensitively (hosts `play.famobi.com`,
+  `games.cdn.famobi.io`, loader `famobi.js`/`famobi_noa.js`, globals
+  `window.famobi*`/`Famobi`, "Powered by Famobi" credits). Any hit =
+  disqualified.
 - **ZIP contents (v1.3.0)**: game files ONLY — no README, no docs, no
   capture/test scripts. `unzip -l` before every release.
 - **File names must be clean (v1.3.0)**: no `poki_nettoyé.js`, no

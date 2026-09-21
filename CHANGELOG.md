@@ -3,6 +3,18 @@
 All notable changes to the **web-game-offliner** skill.
 Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [1.7.0] — 2026-09-21
+
+### Added
+- **Famobi games excluded everywhere — even via third-party portals**: a
+  portal can license and embed Famobi games under its own skin, but the
+  wrapper betrays it. Before any download, grep the candidate's page,
+  `index.html` and runtime for the Famobi signatures: hosts
+  `famobi.com`/`play.famobi.com`/`games.cdn.famobi.io`/`cdn.famobi.com`,
+  loader script `famobi.js`/`famobi_noa.js`, globals `window.famobi*`/
+  `Famobi.*`, `data-famobi*` attributes, "Powered by Famobi" credits. Any
+  hit = Famobi-licensed = disqualified, no matter which portal lists it.
+
 ## [1.6.0] — 2026-09-21
 
 ### Changed

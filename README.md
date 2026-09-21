@@ -10,8 +10,10 @@ the game's original name** — with the in-game branding completely removed
 originality-driven and nothing else: classic games built on an already-known
 concept and clones of famous titles are rejected; every engine and every game
 type (2D, 3D…) is accepted equally, with NO engine priority and NO platform
-preference; the whole build must stay under a 20 MB size cap; and the chosen
-game must NOT already be distributed on GamePix or GameMonetize.
+preference; the whole build must stay under a 20 MB size cap; the chosen
+game must NOT already be distributed on GamePix or GameMonetize; and
+Famobi-licensed games are excluded even when they surface on other portals
+through the Famobi wrapper.
 
 > Proven end-to-end on 5 shipped games (Construct 3, Phaser 2, Phaser 3,
 > PixiJS 5, custom canvas engines) — including the traps: poisoned 404 assets,
@@ -19,8 +21,10 @@ game must NOT already be distributed on GamePix or GameMonetize.
 > Unity WebGL exports are eligible since v1.3.0 and Godot exports since
 > v1.4.0 — since v1.5.0 there is NO engine priority and NO platform
 > preference anymore: selection is driven by ORIGINALITY only, a hard 20 MB
-> size cap applies to every engine alike, and since v1.6.0 a game already
-> distributed on GamePix or GameMonetize is excluded.
+> size cap applies to every engine alike, since v1.6.0 a game already
+> distributed on GamePix or GameMonetize is excluded, and since v1.7.0 any
+> Famobi-licensed game is excluded too — even when it surfaces on another
+> portal through the Famobi wrapper.
 
 ## What the skill does
 
@@ -61,6 +65,10 @@ Every phase encodes the hard-won gotchas that break naive attempts:
 - ✅ **GamePix / GameMonetize exclusion** — the chosen game is checked
   against gamepix.com and gamemonetize.com before any download: already
   distributed there = disqualified
+- ✅ **Famobi games excluded — even via third-party portals** — the Famobi
+  wrapper betrays licensed games wherever they surface (`play.famobi.com`
+  hosts, `famobi.js`/`famobi_noa.js` loader, `window.famobi*` globals,
+  "Powered by Famobi" credits): any hit = disqualified
 - ✅ **20 MB size cap for EVERY engine** — HEAD-measured before download,
   no exception (Unity, Godot, Construct, Phaser, PixiJS, custom…)
 - ✅ **Game-files-only ZIP** — no README, no docs, no tooling inside the archive
