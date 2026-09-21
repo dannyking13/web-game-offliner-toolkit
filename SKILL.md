@@ -1,28 +1,29 @@
 ---
 name: web-game-offliner
-description: Download any web game from any portal and any engine (GameSnacks, Famobi, Softgames, Poki, Construct, Phaser, PixiJS, Unity WebGL, Godot WebGL, etc.), strip its platform SDK, patch it into a fully self-contained offline build with a neutral driver, validate it with Playwright plus an application-level firewall, then deploy it to GitHub Pages under the game's ORIGINAL name (repo, Pages URL and ZIP all reflect the original game title — no invented name) with the in-game branding fully removed (the game itself ships unnamed) and a clean ZIP release. Game selection is originality-driven and NOTHING else: only games with an original concept are eligible — no classic games built on an already-known concept, no clones of famous titles; any engine and any game type (2D, 3D…) is acceptable, with NO engine priority and NO platform preference. The chosen game must NOT already be published on CrazyGames (verify before committing), and the whole build must stay under a 20 MB size cap for EVERY engine. Use when the user asks to localize, offline-ify, self-host, mirror, de-SDK, or republish a browser game.
-version: 1.5.0
+description: Download any web game from any portal and any engine (Softgames, Poki, Construct, Phaser, PixiJS, Unity WebGL, Godot WebGL, etc.), strip its platform SDK, patch it into a fully self-contained offline build with a neutral driver, validate it with Playwright plus an application-level firewall, then deploy it to GitHub Pages under the game's ORIGINAL name (repo, Pages URL and ZIP all reflect the original game title — no invented name) with the in-game branding fully removed (the game itself ships unnamed) and a clean ZIP release. Game selection is originality-driven and NOTHING else: only games with an original concept are eligible — no classic games built on an already-known concept, no clones of famous titles; any engine and any game type (2D, 3D…) is acceptable, with NO engine priority and NO platform preference. The chosen game must NOT already be distributed on GamePix or GameMonetize (verify before committing), and the whole build must stay under a 20 MB size cap for EVERY engine. Use when the user asks to localize, offline-ify, self-host, mirror, de-SDK, or republish a browser game.
+version: 1.6.0
 author: buffy
-tags: [games, offline, download, playwright, github-pages, crazygames, godot]
+tags: [games, offline, download, playwright, github-pages, gamepix, gamemonetize, godot]
 ---
 
 # Web Game Offliner
 
-Take any web game from any portal (GameSnacks, Famobi, Softgames, Poki…, any
+Take any web game from any portal (Softgames, Poki…, any
 engine from Construct to Unity/Godot WebGL exports) and turn it into a
 **100% offline-playable standalone build** with zero external dependencies,
 then deploy it. This skill encodes a pipeline proven end-to-end on 5 games
 (Construct 3, Phaser 2/3, PixiJS 5, custom canvas engines; Unity WebGL
 supported since v1.3.0, Godot since v1.4.0). Any engine and any game type is
 eligible — the only hard filters are ORIGINALITY, the 20 MB size cap and the
-CrazyGames exclusion.
+distribution-exclusion rule (a game already on GamePix or GameMonetize is
+out).
 
 ## Pipeline overview
 
 ```
 Phase 0  IDENTIFY    → catalog scan, engine fingerprint, originality +
-                       CrazyGames-exclusion check + size cap, game selection
-                       (NO engine priority, NO platform preference)
+                       GamePix/GameMonetize-exclusion check + size cap, game
+                       selection (NO engine priority, NO platform preference)
 Phase 1  DOWNLOAD    → full asset pull + integrity audit
 Phase 2  PATCH       → SDK extraction → neutral game-driver.js
 Phase 3  VALIDATE    → Playwright + application firewall
@@ -47,11 +48,9 @@ no external reference at all (Phase 5). See Phase 4 step 2 and Phase 5.
 
 ## Phase 0 — Identify the game and its engine
 
-1. **Catalog scan** — scan ANY portal's catalog: no platform is preferred
-   (v1.5.0). Known entry points, for reference only: GameSnacks' catalog is
-   one big JSON payload (fetch the homepage, pull every `/games/<id>` link
-   ≈423 IDs — each game page yields the **real CDN URL** hidden behind
-   `h5games.usercontent.goog` plus its title); Poki's list is the sitemap
+1. **Catalog scan** — scan ANY portal's catalog or public game feed: no
+   platform is preferred (v1.5.0). Known entry points, for reference only:
+   Poki's list is the sitemap
    `https://poki.com/en/sitemaps/games.xml`. Pick candidates wherever
    ORIGINAL games are found.
 2. **Engine fingerprint** — fetch each candidate's `index.html` and grep the
@@ -99,11 +98,16 @@ Selection criteria, in order:
    and every game type (2D, 3D…) is treated EQUALLY — the fingerprint only
    selects the right playbook, it never ranks candidates. No portal is
    preferred either.
-3. **NOT on CrazyGames — hard exclusion (v1.5.0)**: a chosen game must
-   NEVER already be published on CrazyGames. BEFORE any download, search
-   `https://www.crazygames.com/search?q=<title keywords>` and browse the
-   result titles: if the same game (same title, or unmistakably the same
-   gameplay) already exists there, the candidate is DISQUALIFIED.
+3. **NOT already on GamePix or GameMonetize — hard exclusion (v1.6.0)**: a
+   chosen game must NEVER already be distributed on GamePix or
+   GameMonetize. BEFORE any download, search both catalogs and browse the
+   result titles:
+   - GamePix: `https://www.gamepix.com/search?q=<title keywords>` (bot-walled;
+     use a real browser if curl gets 403)
+   - GameMonetize: `https://gamemonetize.com/?s=<title keywords>` (or
+     `/games?search=<keywords>`)
+   If the same game (same title, or unmistakably the same gameplay) already
+   exists on either platform, the candidate is DISQUALIFIED.
 4. **Size — hard cap for EVERY engine (v1.5.0)**: the total download must
    stay **under 20 MB for ALL engines alike** (Unity `.wasm`/`.data`, Godot
    `.wasm`/`.pck`, Construct/Phaser/PixiJS assets, everything). Measure the
@@ -146,11 +150,11 @@ index.html
   └── game-driver.js      ← NEW: neutral "driver" = offline SDK replacement
         └── exposes the exact surface the game calls
 game code (js/game.js, main.js…)
-  └── GameSnacks.* / famobi / sg calls rewritten to GameDriver.*
+  └── pokiSDK / sg calls rewritten to GameDriver.*
 ```
 
 1. **Inventory the SDK surface actually used** — grep the whole codebase for
-   every call shape: `GameSnacks.`, `window.GameSnacks`, `famobi.`, `sg.`
+   every call shape: `PokiSDK.`, `window.PokiSDK`, `sg.`
    (Softgames), `pSDK`. Typical methods: `audio.*`, `ad.*`, `storage.*`,
    `gameStart()`, `levelStart/levelEnd`, `happytime()`, `gameover()`,
    `setProgress`, `firstPlay`, etc.
@@ -167,8 +171,8 @@ game code (js/game.js, main.js…)
      base64-encoded JSON values and **asynchronous** reads. Read the SDK
      client code to know which.
 3. **Rewrite call sites** — in minified code, plain-text replacement works:
-   `GameSnacks.` → `GameDriver.` (watch for `window.GameSnacks` too). If the
-   game has a fallback stub like `window.GameSnacks = window.GameSnacks || {}`
+   `PokiSDK.` → `GameDriver.` (watch for `window.PokiSDK` too). If the
+   game has a fallback stub like `window.PokiSDK = window.PokiSDK || {}`
    it's harmless — leave it.
 4. **Neutralize analytics/telemetry**: Sentry, DDNA, Google Fonts, A/B test
    fetches, `img` social share paths. Either remove the script tags, or
@@ -443,7 +447,7 @@ invent a brand-new title.
 - **Capture**: Unity loads big binaries — capture with route interception
   like any other build, and also grab the `Build/*.json` manifest that lists
   every expected file so the integrity audit is complete.
-- **SDK surface**: portal wrappers (Poki/GameSnacks/Crazy Unity plugins)
+- **SDK surface**: portal wrappers (Poki/Crazy Unity plugins)
   bridge JS↔Unity via `SendMessage('GameObject', 'Method', …)` and `jslib`.
   Keep `SendMessage` working and implement the JS side in `game-driver.js`;
   for `jslib`-generated glue, provide the matching global functions or patch
@@ -478,10 +482,9 @@ invent a brand-new title.
 - **Compression**: same rule as Unity — GitHub Pages cannot set
   `Content-Encoding`; ship uncompressed variants and make the loader config
   match.
-- **Sitelock / SDK wrappers**: portal wrappers (Poki SDK, Crazy, Famobi)
+- **Sitelock / SDK wrappers**: portal wrappers (Poki SDK, Crazy)
   call into the game via JS before/after engine start — neutralize them in
-  `game-driver.js` exactly like any other build (grep `pokiSDK`, `famobi`,
-  `CrazyGames`, `sg.`).
+  `game-driver.js` exactly like any other build (grep `pokiSDK`, `sg.`).
 - **Engine-start failure mode**: if the game never renders, check the
   browser console for `pck` load errors (wrong path or `Content-Type`) —
   Godot aborts silently otherwise. Serve `.pck` as `application/octet-stream`
@@ -534,8 +537,8 @@ invent a brand-new title.
 ## Reference implementation
 
 A complete working example of every artifact this skill describes (driver
-files, firewall tests, atlas resizing, deploy scripts) lives in
-`gamesnacks-batch/*/game-driver.js` and `gamesnacks-local/` in the agent
+files, firewall tests, atlas resizing, deploy scripts) lives in the
+`poki-run2/` per-game builds (`game-driver.js` each) in the agent
 workspace that produced it. Reproduce the same artifact names so future agents
 can navigate quickly: `game-driver.js`, `serve.sh`, `README.md`,
 `resize_atlas.js`, `test_*.js` — the `test_*`/capture scripts stay in the

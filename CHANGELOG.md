@@ -3,6 +3,22 @@
 All notable changes to the **web-game-offliner** skill.
 Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [1.6.0] — 2026-09-21
+
+### Changed
+- **Distribution exclusion retargeted**: the hard exclusion is no longer
+  CrazyGames — a chosen game must now NOT already be distributed on
+  **GamePix** or **GameMonetize**. Before any download, search both catalogs
+  (`gamepix.com/search?q=<keywords>` — bot-walled, use a real browser;
+  `gamemonetize.com/?s=<keywords>`) and disqualify on same title or
+  unmistakably the same gameplay.
+- **Catalog entry points pruned**: GameSnacks and Famobi removed from the
+  documented sources (GameSnacks' homepage-JSON scan recipe is gone; Famobi
+  is dropped from the portal lists and SDK-surface inventories); Poki's
+  sitemap remains the reference entry point. Y8 was never referenced.
+  Examples and the reference-implementation pointer updated accordingly
+  (`PokiSDK.` now leads the grep list).
+
 ## [1.5.0] — 2026-09-15
 
 ### Changed
@@ -19,7 +35,8 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   PixiJS, custom…), HEAD-measured before download, no exception.
 
 ### Added
-- **CrazyGames exclusion — hard rule**: the chosen game must NEVER already
+- **CrazyGames exclusion — hard rule** (superseded in v1.6.0 by the
+  GamePix/GameMonetize exclusion): the chosen game must NEVER already
   be published on CrazyGames. Before any download, search
   `https://www.crazygames.com/search?q=<title keywords>`; same title or
   unmistakably the same gameplay already there = candidate disqualified.
