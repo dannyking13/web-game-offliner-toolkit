@@ -1,7 +1,7 @@
 ---
 name: web-game-offliner
-description: Download any web game from any portal and any engine (Softgames, Poki, Construct, Phaser, PixiJS, Unity WebGL, Godot WebGL, etc.), strip its platform SDK, patch it into a fully self-contained offline build with a neutral driver, validate it with Playwright plus an application-level firewall, then deploy it to GitHub Pages under the game's ORIGINAL name (repo, Pages URL and ZIP all reflect the original game title — no invented name) with the in-game branding fully removed (the game itself ships unnamed) and a clean ZIP release. Game selection is originality-driven and NOTHING else: only games with an original concept are eligible — no classic games built on an already-known concept, no clones of famous titles; any engine and any game type (2D, 3D…) is acceptable, with NO engine priority and NO platform preference. The chosen game must NOT already be distributed on GamePix or GameMonetize (verify before committing), Famobi-licensed games are excluded even when they surface on other portals through the Famobi wrapper, and the whole build must stay under a 20 MB size cap for EVERY engine. Use when the user asks to localize, offline-ify, self-host, mirror, de-SDK, or republish a browser game.
-version: 1.7.0
+description: "Download any web game from any portal and any engine (Softgames, Poki, Construct, Phaser, PixiJS, Unity WebGL, Godot WebGL, etc.), strip its platform SDK, patch it into a fully self-contained offline build with a neutral driver, validate it with Playwright plus an application-level firewall, then deploy it to GitHub Pages under the game's ORIGINAL name (repo, Pages URL and ZIP all reflect the original game title — no invented name) with the in-game branding fully removed (the game itself ships unnamed) and a clean ZIP release. Game selection is originality-driven and NOTHING else: only games with an original concept are eligible — no classic games built on an already-known concept, no clones of famous titles; any engine and any game type (2D, 3D…) is acceptable, with NO engine priority and NO platform preference. The chosen game must NOT already be distributed on GamePix or GameMonetize (verify before committing), Famobi-licensed games are excluded even when they surface on other portals through the Famobi wrapper, and the whole build must stay under a 20 MB size cap for EVERY engine. BEFORE any download or cleaning the game is checked against BOTH publishing accounts (dannyking6, d2658182-hub) and skipped if it has already been cleaned there — never a duplicate build. Use when the user asks to localize, offline-ify, self-host, mirror, de-SDK, or republish a browser game."
+version: 1.8.0
 author: buffy
 tags: [games, offline, download, playwright, github-pages, gamepix, gamemonetize, famobi, godot]
 ---
@@ -14,17 +14,20 @@ engine from Construct to Unity/Godot WebGL exports) and turn it into a
 then deploy it. This skill encodes a pipeline proven end-to-end on 5 games
 (Construct 3, Phaser 2/3, PixiJS 5, custom canvas engines; Unity WebGL
 supported since v1.3.0, Godot since v1.4.0). Any engine and any game type is
-eligible — the only hard filters are ORIGINALITY, the 20 MB size cap and the
-distribution-exclusion rules (a game already on GamePix or GameMonetize is
-out, and so is any Famobi-licensed game — even via a third-party portal).
+eligible — the only hard filters are ORIGINALITY, the already-cleaned-on-our-
+accounts exclusion (checked BEFORE any cleaning, v1.8.0), the 20 MB size cap
+and the distribution-exclusion rules (a game already on GamePix or
+GameMonetize is out, and so is any Famobi-licensed game — even via a
+third-party portal).
 
 ## Pipeline overview
 
 ```
 Phase 0  IDENTIFY    → catalog scan, engine fingerprint, originality +
-                       GamePix/GameMonetize/Famobi-exclusion checks + size
-                       cap, game selection (NO engine priority, NO platform
-                       preference)
+                       duplicate check on BOTH publishing accounts (STOP if
+                       already cleaned) + GamePix/GameMonetize/Famobi-
+                       exclusion checks + size cap, game selection (NO
+                       engine priority, NO platform preference)
 Phase 1  DOWNLOAD    → full asset pull + integrity audit
 Phase 2  PATCH       → SDK extraction → neutral game-driver.js
 Phase 3  VALIDATE    → Playwright + application firewall
@@ -94,12 +97,18 @@ Selection criteria, in order:
    familiar genre with real added mechanics (novel physics, unusual goal,
    original twist) is fine — "known genre" is not the same as "known
    concept".
-2. **NO engine priority, NO platform preference (v1.5.0)**: every engine
+2. **NOT already cleaned on our accounts — hard gate BEFORE ANY cleaning
+   (v1.8.0)**: before downloading or patching ANYTHING, list the repos on
+   BOTH publishing accounts and verify the candidate game has not already
+   been cleaned/published there. If it has — STOP: no download, no cleaning,
+   no duplicate build; reuse the existing repo/build instead. See the
+   detailed procedure below.
+3. **NO engine priority, NO platform preference (v1.5.0)**: every engine
    (Construct, Phaser, PixiJS, Cocos, Unity WebGL, Godot WebGL, custom…)
    and every game type (2D, 3D…) is treated EQUALLY — the fingerprint only
    selects the right playbook, it never ranks candidates. No portal is
    preferred either.
-3. **NOT already on GamePix or GameMonetize — hard exclusion (v1.6.0)**: a
+4. **NOT already on GamePix or GameMonetize — hard exclusion (v1.6.0)**: a
    chosen game must NEVER already be distributed on GamePix or
    GameMonetize. BEFORE any download, search both catalogs and browse the
    result titles:
@@ -109,7 +118,7 @@ Selection criteria, in order:
      `/games?search=<keywords>`)
    If the same game (same title, or unmistakably the same gameplay) already
    exists on either platform, the candidate is DISQUALIFIED.
-4. **NO Famobi games — hard exclusion (v1.7.0)**: Famobi-licensed games are
+5. **NO Famobi games — hard exclusion (v1.7.0)**: Famobi-licensed games are
    out EVEN when they surface on another portal, through Famobi's embed
    wrapper. At fingerprint time, BEFORE any download, check the game page
    and its `index.html`/runtime for the Famobi signatures:
@@ -120,12 +129,41 @@ Selection criteria, in order:
    - "Famobi" / "Powered by Famobi" credits in the page or the game
    Any hit = the game is Famobi-licensed = DISQUALIFIED, no matter which
    portal lists it.
-5. **Size — hard cap for EVERY engine (v1.5.0)**: the total download must
+6. **Size — hard cap for EVERY engine (v1.5.0)**: the total download must
    stay **under 20 MB for ALL engines alike** (Unity `.wasm`/`.data`, Godot
    `.wasm`/`.pck`, Construct/Phaser/PixiJS assets, everything). Measure the
    sizes BEFORE committing (HEAD requests on the build files); a build over
    the cap is disqualified — no exception, no "audit later".
-6. Clean asset manifest; no aggressive DRM.
+7. Clean asset manifest; no aggressive DRM.
+
+### MANDATORY — Duplicate check on BOTH publishing accounts (v1.8.0, BEFORE any cleaning)
+
+Run this BEFORE Phase 1 — before any download, before any cleaning work. A
+game that is already cleaned on either account must never be downloaded,
+patched or deployed again:
+
+- `dannyking6`   → `gh api users/dannyking6/repos?per_page=100 --jq '.[].name'`
+  (paginate with `&page=N`; without `gh`, use
+  `curl -s -H "Authorization: Bearer $TOKEN" https://api.github.com/users/dannyking6/repos?per_page=100`)
+- `d2658182-hub` → same for `d2658182-hub`
+
+Then compare the candidate's ORIGINAL title against every repo name:
+
+- normalize both sides (lowercase, strip non-alphanumerics):
+  `Jewels Blitz 5` == `jewels-blitz-5`;
+- ALSO match fuzzy/legacy names: older repos are named after the portal game
+  ID, not the title (`gamesnacks-jumplake`, `towercubes`,
+  `gamesnacks-runomnom`…) or carry suffixes (`-clean`, `-offline`,
+  `-publish`, `_2016`) — match on the distinctive title words, not just the
+  exact kebab-case;
+- check the local workspace too: an existing build folder for the same game
+  counts as already-cleaned.
+
+Decision rule: if the game (same title, or unmistakably the same gameplay) is
+found on EITHER account or in the workspace → DISQUALIFIED as a duplicate.
+Do not download, do not clean, do not deploy — report it as already done and
+move to the next candidate. Only a game absent from BOTH accounts and the
+workspace may enter Phase 1.
 
 ## Phase 1 — Download everything (and audit it)
 
@@ -325,17 +363,18 @@ has no name.
 > return **0 hits** (0 in-game hits), while the delivery surfaces carry it
 > as-is.
 
-**MANDATORY — Collision check before creating the repo**: list the repos on
-BOTH publishing accounts and make sure this game hasn't already been
-cleaned/published (or the original-name repo doesn't already exist for a
-different game):
+**MANDATORY — Collision re-check before creating the repo (v1.8.0)**: the
+Phase 0 duplicate gate must have already stopped duplicates BEFORE any
+cleaning; re-run the same check on BOTH accounts right before creating the
+repo as a final safety net (a sibling agent may have published the same game
+in the meantime):
 
 - `dannyking6`  → `gh api users/dannyking6/repos?per_page=100 --jq '.[].name'`
 - `d2658182-hub` → `gh api users/d2658182-hub/repos?per_page=100 --jq '.[].name'`
 
-If a repo (or a previous build folder in the workspace) already matches the
-original game name or the same game, reuse that existing work instead of
-deploying a duplicate. If the name itself is taken by an unrelated repo,
+If a repo (or a previous build folder in the workspace) now matches the
+original game name or the same game, do NOT deploy a duplicate — reuse that
+existing work. If the name itself is taken by an unrelated repo,
 resolve the collision minimally (e.g. append the portal game id) — do NOT
 invent a brand-new title.
 
@@ -540,6 +579,12 @@ invent a brand-new title.
   (2048, snake, solitaire, Tetris-like, memory, flappy clones…) and famous-
   title clones BEFORE downloading — read screenshots/gameplay, not just the
   title.
+- **Duplicate screening BEFORE cleaning (v1.8.0)**: list the repos on BOTH
+  accounts (dannyking6, d2658182-hub) BEFORE downloading anything — never
+  clean a game that is already there. Repos may be named by title
+  (`jewels-blitz-5`) OR by legacy portal ID (`gamesnacks-jumplake`,
+  `towercubes`), so match on distinctive title words too, and count an
+  existing workspace build folder as already-cleaned.
 - **Famobi games are out even via third-party portals (v1.7.0)**: a portal
   can license and embed Famobi games under its own skin — the wrapper still
   betrays it. Before downloading, grep the candidate's page/index/runtime

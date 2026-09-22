@@ -3,6 +3,28 @@
 All notable changes to the **web-game-offliner** skill.
 Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [1.8.0] — 2026-09-22
+
+### Added
+- **Duplicate gate BEFORE any cleaning — hard Phase 0 rule**: before any
+  download or cleaning work, list the repos on BOTH publishing accounts
+  (`dannyking6`, `d2658182-hub`) and verify the candidate game has not
+  already been cleaned/published there. Matching normalizes names
+  (`Jewels Blitz 5` == `jewels-blitz-5`) AND covers legacy portal-ID repo
+  names (`gamesnacks-jumplake`, `towercubes`) and suffix variants
+  (`-clean`, `-offline`, `-publish`); an existing workspace build folder
+  also counts as already-cleaned. A duplicate is disqualified with no
+  download, no cleaning, no deploy — report and move to the next candidate.
+  The Phase 5 pre-deploy collision check is kept as a final safety net
+  (re-run right before creating the repo).
+
+### Fixed
+- **SKILL.md frontmatter YAML repaired**: the `description` key is now
+  quoted — the unquoted value contained a `: ` sequence that broke YAML
+  parsing (`Nested mappings are not allowed in compact mappings`), which
+  made `npx skills add` reject the whole repository as containing no valid
+  skills.
+
 ## [1.7.0] — 2026-09-21
 
 ### Added
